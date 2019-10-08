@@ -1,3 +1,9 @@
+commit 6d28325e8d122d113b9108ff8184aeb3b3d1273e
+Author: Yanchen Guo <guo@hoare7.cs.umsl.edu>
+Date:   Mon Oct 7 20:55:17 2019 -0500
+
+    included 2 executable with fork running
+
 commit 8bc9ab4c29328a453b2b2f6bdbe632ac82fcfe22
 Author: Yanchen Guo <guo@hoare7.cs.umsl.edu>
 Date:   Thu Oct 3 11:08:29 2019 -0500

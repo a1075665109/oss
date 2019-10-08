@@ -5,12 +5,14 @@
 // getopt
 #include <unistd.h>
 
+#include <sys/ipc.h>
+#include <sys/shm.h>
 pid_t child_pid = -1;
 char *logFile = "logFile";
 int maxTime = 5;
 int tempChild = 5;
 
-struct shared{
+struct shmseg{
 	int sec;
 	int nano_sec;
 	char * shmMsg;
@@ -61,21 +63,53 @@ int main(int argc, char* argv[]){
 		}
 	}
 	// alarm that'll terminate everything after given time has passed;
-	alarm(maxTime);
+	alarm(maxTime);	
+	
+	// shared memory segment
+	int shmid;
+	struct shmseg *shmp;
+	shmid = shmget(0x1234,sizeof(struct shmseg),0755|IPC_CREAT);
+	if(shmid == -1){
+		perror("Shared memory\n");
+		return 0;
+	}
+
+	shmp = shmat(shmid,NULL,0);
+	if(shmp == (void *)-1){
+		perror("Shared memory attach\n");
+		return 0;
+	}
+	shmp->sec =0;
+        shmp->nano_sec =0;
+	shmp->shmMsg =0;
+	
+	int a =2;	
 
 	while(tempChild>0){	
+		a+=1;
 		if(child_pid>0|| child_pid == -1){
 			printf("%d \n",tempChild);
 			child_pid = fork();
 			tempChild = tempChild -1;
 			if(child_pid <=0){
-				system("./user");
+				sleep(a);
+				execvp("./user",NULL);
+				printf("hello\n");
 				kill(getpid(),SIGTERM);
 			}
 		}
 	}
-	while( (wpid = wait(&status))>0);
-	printf("hello\n");
+	
+	while(1){
+		sleep(1);
+			shmp->nano_sec = shmp->nano_sec +1000;
+			if(shmp->nano_sec >= 1000000000){
+				shmp->sec = shmp->sec +1;
+				shmp->nano_sec -= 1000000000;
+			}
+	//		printf("Seconds: %d, Nano-seconds: %d\n",shmp->sec,shmp->nano_sec);
+		
+	}
 	return 0;
 }
 
