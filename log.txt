@@ -1,3 +1,9 @@
+commit d1b63e526987986bef643280f3fa4a59acec8afa
+Author: Yanchen Guo <guo@hoare7.cs.umsl.edu>
+Date:   Tue Oct 8 19:22:49 2019 -0500
+
+    putting everything together, clock, spawning child after one is terminated
+
 commit 25ca312cc4c604c19e6694e05c1bc9e1eecb3b99
 Author: Yanchen Guo <guo@hoare7.cs.umsl.edu>
 Date:   Tue Oct 8 14:12:33 2019 -0500

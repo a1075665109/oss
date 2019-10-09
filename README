@@ -7,7 +7,7 @@ It then creates an executable called "oss" and another called "user".
 Running the project by calling "./oss".
 It could also be ran with these command line arguments "-h -s -l -t".
 
--h: displays all the avaliable command line arguments for this project.
+-h: displays all the avaliable command line arguments for this project then runs the program.
 -s: give a number after -s to change its default max child from 5 to given.
 -l: give a file name after -l to change its default output file from logFile to given argument
 -t: give a integer after -to change the dafault running time of the main program from 5s to given integer seconds.
@@ -17,7 +17,11 @@ Some problems I ran into while programming that took a long time to solve:
 	1. shared memory pointers are pointed to an address outside of the shared memory
 	2. implementing the system clock without the child interferring
 	3. running multiple processes and leaving some process alive after master process is done processing
-	4. 
+
+problem that may exist:
+	1. While running the program for upto 100 childs created, if the max memory space allowed is lesser, the alarm
+		returns "alarm clock" and terminates. I tried running the program for lower number of child like 20
+			and it worked perfectly. 
 
 
 Version control through github, all the logs could be found under log.txt within the directory.

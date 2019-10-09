@@ -13,13 +13,14 @@ char *logFile = "logFile";
 int maxTime = 5;
 int tempChild = 5;
 
+// shared memory structure
 struct shmseg{
 	int sec;
 	int nano_sec;
 	int timeArray[3];
 };
 
-
+// alarm handler that terminates the parent process
 void alarmHandler(int sig){
 	FILE *fp;
 	fp = fopen(logFile,"a");
@@ -28,6 +29,7 @@ void alarmHandler(int sig){
 	if(child_pid!=-1){
                 kill(child_pid,SIGTERM);
         }
+	printf("Execute success! the results have been stored into file \"logFile\"\n");
         kill(getpid(),SIGTERM);
 }
 
@@ -45,6 +47,7 @@ int main(int argc, char* argv[]){
 	while((opt = getopt(argc,argv,"hs:l:t:"))!=-1){
                 switch(opt){
 			case 'h':
+				printf("Legal command line options: -h -s -l -t\n\n");
 				hflag = 1;
 				break;
 		
@@ -67,8 +70,6 @@ int main(int argc, char* argv[]){
 				break;
 		}
 	}
-	// alarm that'll terminate everything after given time has passed;
-	alarm(maxTime);	
 	
 	// shared memory segment
 	int shmid;
@@ -90,11 +91,11 @@ int main(int argc, char* argv[]){
 	shmp->timeArray[0] = 0;
 	shmp->timeArray[1] = 0;
 	shmp->timeArray[2] = 0;
+	alarm(maxTime);
 	// loop tempChild amount of times to fork child, tempChild default 5 or given as command line arg
 	while(tempChild>0){	
 		// if it is in the parent
 		if(child_pid>0|| child_pid == -1){
-			printf("%d child process waiting to be forked \n",tempChild);
 			
 			//fork and then decrease the amount of child because check condition on while loop
 			child_pid = fork();
@@ -109,36 +110,38 @@ int main(int argc, char* argv[]){
 		}
 	}
 	
-	while(maxTotalChild>0){
-			shmp->nano_sec = shmp->nano_sec +1000;
+	// infinite loop that increments the clock(nano_seconds) by 1000
+	while(1){
+		shmp->nano_sec = shmp->nano_sec +1000;			
+		if(shmp->nano_sec >= 1000000000){
+			shmp->sec = shmp->sec +1;
+			shmp->nano_sec =0;
+		}					
 	
-			if(shmp->nano_sec >= 1000000000){
-				shmp->sec = shmp->sec +1;
-				shmp->nano_sec =0;
-			}
-						
-			
 			// if the message que is not empty, grab the info
- 			// fork another process because not empty means one child has terminated 
-			if( (shmp->timeArray[0] != 0 && shmp->timeArray[2]!=0)|| (shmp->timeArray[1] != 0&& shmp->timeArray[2]!=0) ){
+			if( shmp->timeArray[2]!=0 ){
 				fp = fopen(logFile,"a");
 				fprintf(fp,"Master: child pid %d terminated at my time %d.%d because it reached %d.%d  in child process\n",
 					shmp->timeArray[2],shmp->sec,shmp->nano_sec,
 					shmp->timeArray[0],shmp->timeArray[1]);	
+			// clearing the shared memory for critical section comparison
 				shmp->timeArray[0] = 0;
                         	shmp->timeArray[1] = 0;
                         	shmp->timeArray[2] = 0;
 				fclose(fp);
-				maxTotalChild = maxTotalChild-1;
-				child_pid=fork();
-				if(child_pid <=0){
-                                	printf("hello\n");
-					execvp("./user",NULL);
-					kill(getpid(),SIGTERM);
+			// decreament the max amount of child process then fork another child because one is terminated
+				if(maxTotalChild >0){	
+					maxTotalChild = maxTotalChild-1;
+					child_pid=fork();
+					if(child_pid <=0){
+						execvp("./user",NULL);
+						kill(getpid(),SIGTERM);
+					}
 				}
 			}	
 		
 	}
+	while ((wpid = wait(&status)) > 0);
 	return 0;
 }
 

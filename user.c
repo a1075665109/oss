@@ -38,22 +38,24 @@ int main(int argc, char* argv[]){
 	unsigned int child_sec = shmp->sec;
 	unsigned int child_nano_sec = shmp->nano_sec;
 
+	// randomizing child termination time
 	child_nano_sec = child_nano_sec+(rand()%(10000000000)+1);
 	if(child_nano_sec < 0){
 		child_nano_sec *= -1;
 	}
 	
+	// if its over one second, add one to secs .
 	while(child_nano_sec >= 1000000000){
 		child_sec = child_sec+1;
 		child_nano_sec = child_nano_sec -1000000000;
 	}
-	printf("%d,%d\n",child_sec,child_nano_sec);	
 
 	// inifite loop until the master clock passes the child clock after implementation
 	while(1){
 		if(child_nano_sec < shmp->nano_sec){
 			if(child_sec < shmp->sec || child_sec == shmp->sec){ 
 				if(shmp->timeArray[0]==0 && shmp->timeArray[1] ==0 && shmp->timeArray[2]==0){	
+					wait(0.05);
 					shmp->timeArray[0] = child_sec;
 					shmp->timeArray[1] = child_nano_sec;
 					shmp->timeArray[2] = getpid();
@@ -63,6 +65,7 @@ int main(int argc, char* argv[]){
 		}else{
 			if(child_sec < shmp->sec){
 				if(shmp->timeArray[0]==0 && shmp->timeArray[1] ==0 && shmp->timeArray[2]==0){
+					wait(0.05);
 			                shmp->timeArray[0] = child_sec;
                                         shmp->timeArray[1] = child_nano_sec;
                                         shmp->timeArray[2] = getpid();
