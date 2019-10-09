@@ -1,0 +1,26 @@
+Yanchen Guo
+CS 4760
+Project 3
+
+For this project, compile it by first enter the command "make"
+It then creates an executable called "oss" and another called "user".
+Running the project by calling "./oss".
+It could also be ran with these command line arguments "-h -s -l -t".
+
+-h: displays all the avaliable command line arguments for this project.
+-s: give a number after -s to change its default max child from 5 to given.
+-l: give a file name after -l to change its default output file from logFile to given argument
+-t: give a integer after -to change the dafault running time of the main program from 5s to given integer seconds.
+
+
+Some problems I ran into while programming that took a long time to solve:
+	1. shared memory pointers are pointed to an address outside of the shared memory
+	2. implementing the system clock without the child interferring
+	3. running multiple processes and leaving some process alive after master process is done processing
+	4. 
+
+
+Version control through github, all the logs could be found under log.txt within the directory.
+
+make clean command will remove only the executable and the default output file.
+~                                                                                

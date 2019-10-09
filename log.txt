@@ -1,3 +1,9 @@
+commit 25ca312cc4c604c19e6694e05c1bc9e1eecb3b99
+Author: Yanchen Guo <guo@hoare7.cs.umsl.edu>
+Date:   Tue Oct 8 14:12:33 2019 -0500
+
+    shared memory working, child process is terminating with correct nano_sec implementation
+
 commit 6d28325e8d122d113b9108ff8184aeb3b3d1273e
 Author: Yanchen Guo <guo@hoare7.cs.umsl.edu>
 Date:   Mon Oct 7 20:55:17 2019 -0500

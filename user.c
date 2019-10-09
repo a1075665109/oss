@@ -4,18 +4,23 @@
 #include <signal.h>
 
 #include <time.h>
-
+#include <semaphore.h> 
 #include <sys/ipc.h>
 #include <sys/shm.h>
-
+#include <pthread.h>
+// shared memory structure
 struct shmseg{
-	int sec;
-	int nano_sec;
-	char *shmMsg;
+	unsigned int sec;
+	unsigned int nano_sec;
+	unsigned timeArray[3];
 };
 
 int main(int argc, char* argv[]){
-	srand(time(0));
+	// random numebr seed
+	time_t t;
+	srand((unsigned)time(&t));
+	
+	// starting shared memory
 	int shmid;
         struct shmseg *shmp;
         shmid = shmget(0x1234,sizeof(struct shmseg),0755|IPC_CREAT);
@@ -29,24 +34,44 @@ int main(int argc, char* argv[]){
                 perror("Shared memory attach\n");
                 return 0;
         }
-	
-	int child_sec = shmp->sec;
-	int child_nano_sec = shmp->nano_sec +(rand()%(10000)+1);
-	if(child_nano_sec >= 1000000000){
-		child_sec += 1;
-		child_nano_sec -=1000000000;
+	// recieving the values stored in shared memory then add a random number to it
+	unsigned int child_sec = shmp->sec;
+	unsigned int child_nano_sec = shmp->nano_sec;
+
+	child_nano_sec = child_nano_sec+(rand()%(10000000000)+1);
+	if(child_nano_sec < 0){
+		child_nano_sec *= -1;
 	}
+	
+	while(child_nano_sec >= 1000000000){
+		child_sec = child_sec+1;
+		child_nano_sec = child_nano_sec -1000000000;
+	}
+	printf("%d,%d\n",child_sec,child_nano_sec);	
+
+	// inifite loop until the master clock passes the child clock after implementation
 	while(1){
 		if(child_nano_sec < shmp->nano_sec){
 			if(child_sec < shmp->sec || child_sec == shmp->sec){ 
-				printf("%d, %d",shmp->sec,shmp->nano_sec);
-				break;
+				if(shmp->timeArray[0]==0 && shmp->timeArray[1] ==0 && shmp->timeArray[2]==0){	
+					shmp->timeArray[0] = child_sec;
+					shmp->timeArray[1] = child_nano_sec;
+					shmp->timeArray[2] = getpid();
+					break;
+				}
+			}
+		}else{
+			if(child_sec < shmp->sec){
+				if(shmp->timeArray[0]==0 && shmp->timeArray[1] ==0 && shmp->timeArray[2]==0){
+			                shmp->timeArray[0] = child_sec;
+                                        shmp->timeArray[1] = child_nano_sec;
+                                        shmp->timeArray[2] = getpid();
+                                        break;
+                                } 
 			}
 		}	
 	}
 		
-	pid_t me = getpid();
-	printf("My pid is %d\n",me);
 	kill(getpid(),SIGTERM);
 	return 0;
 }
